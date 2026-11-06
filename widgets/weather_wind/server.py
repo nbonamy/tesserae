@@ -2,7 +2,7 @@
 
 Open-Meteo's hourly array starts at midnight today, so we trim from the
 current local hour onward to expose a "next N hours" window aligned with
-the user's expectation. Cached for 10 minutes per (lat, lon, units, hours)
+the user's expectation. Cached for up to 10 minutes per (lat, lon, units, hours), expiring at each local hour
 in the plugin's data_dir.
 """
 
@@ -11,9 +11,10 @@ from __future__ import annotations
 import contextlib
 import json
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from app.plugin_http import fetch_json
 
@@ -26,11 +27,23 @@ USER_AGENT = "tesserae/0.1 (+weather_hourly)"
 ALLOWED_HOURS = (12, 24, 48)
 
 
+def _local_hour(data: dict[str, Any]) -> datetime:
+    """The forecast location's actual clock hour, including its UTC offset."""
+    try:
+        zone = ZoneInfo(str(data.get("timezone") or "UTC"))
+    except (ZoneInfoNotFoundError, ValueError):
+        zone = timezone.utc
+    return datetime.fromtimestamp(time.time(), zone).replace(minute=0, second=0, microsecond=0)
+
+
 def _cached(path: Path) -> dict[str, Any] | None:
     if not path.exists() or time.time() - path.stat().st_mtime >= CACHE_TTL_S:
         return None
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if not isinstance(data, dict) or data.get("_cache_hour") != _local_hour(data).isoformat():
+            return None
+        return data
     except (json.JSONDecodeError, OSError):
         return None
 
@@ -134,7 +147,10 @@ def fetch(
     rain: list[float | None] = hourly.get("precipitation_probability") or []
     codes: list[int | None] = hourly.get("weather_code") or []
 
-    start = _window_start_index(times, current.get("time"))
+    local_hour = _local_hour(payload)
+    # Observations can lag the clock; do not anchor a new hour's chart to
+    # the previous observation's timestamp. Hourly API slots are local ISO.
+    start = _window_start_index(times, local_hour.replace(tzinfo=None).isoformat())
     end = start + hours
     points: list[dict[str, Any]] = []
     max_t: float | None = None
@@ -208,6 +224,8 @@ def fetch(
     structured_min = min(temps_arr) if temps_arr else min_t
 
     result = {
+        "timezone": payload.get("timezone") or "UTC",
+        "_cache_hour": local_hour.isoformat(),
         "label": options.get("label", ""),
         "units": units,
         "hours": hours,

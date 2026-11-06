@@ -1,7 +1,7 @@
 {
   "tesserae_compat": "1.x",
   "name": "Weather and Wind",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "kind": "widget",
   "description": "Hourly temperature and conditions with current wind speed and direction. Data from Open-Meteo.",
   "icon": "ph-chart-line",

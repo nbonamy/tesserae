@@ -1,13 +1,18 @@
-# Weather and Wind
+# Tesserae Custom Widgets
 
-A custom Tesserae widget for an 800 × 480 e-ink weather screen:
+A collection of custom widgets for [Tesserae](https://github.com/dmellok/tesserae)
+e-ink dashboards, with a script to deploy them to an existing server.
 
-- Hourly temperature curve and weather icons.
-- Current and feels-like temperatures, with large low/high readings.
-- Wind direction and speed.
-- Sunrise and sunset icons with local times.
+## Widgets
 
-## Deploy to your server
+| Widget | Description | License |
+| --- | --- | --- |
+| [Weather and Wind](widgets/weather_wind/README.md) | Hourly weather, current and feels-like temperatures, low/high readings, wind, sunrise, and sunset. | [AGPL-3.0](widgets/weather_wind/LICENSE) |
+
+Each widget's folder contains its source, documentation, tests, and any
+widget-specific license and attribution.
+
+## Deploy
 
 An existing Tesserae Docker container and SSH access are required. The SSH
 user needs Docker access, directly or through passwordless sudo.
@@ -18,25 +23,22 @@ cp .env.example .env
 ./deploy.sh
 ```
 
-The script copies only `widgets/weather_wind/`, excluding Python caches,
-into the container's persistent `/app/data/authored/weather_wind/` directory
-and restarts Tesserae. It does not upload `.env` or change server configuration.
-Keep `.env` private; Git ignores it.
+The deployment script currently installs **Weather and Wind** into
+`/app/data/authored/weather_wind/` and restarts Tesserae. It uploads only the
+widget files, excluding Python caches. It does not upload `.env` or change
+server configuration. Keep `.env` private; Git ignores it.
 
-In Tesserae, add **Weather and Wind** to a dashboard and choose your location,
-forecast window, and units. For automatic updates, set the dashboard's content
-refresh to 60 minutes, or configure a 60-minute background refresh when using
-a Lineup.
-
-## Checks
-
-```sh
-python3 -m unittest discover -s widgets/weather_wind/tests -p test_sun_times.py
-node widgets/weather_wind/tests/test_client.mjs
-bash -n deploy.sh
-```
+After deployment, add the widget to a dashboard in Tesserae and configure its
+options. See the widget's README for details.
 
 ## License
 
-Derived from Tesserae's `weather_hourly` widget. See [LICENSE](LICENSE) and
-[NOTICE.md](NOTICE.md) for the AGPL-3.0 license and attribution.
+[Apache 2.0](LICENSE) is the default license for this repository, including the
+deployment script and repository-level documentation, **unless a file or
+folder specifies a different license**. A folder's own `LICENSE` applies to
+its contents, subject to any more specific licensing notices.
+
+**Weather and Wind is AGPL-3.0**, as it derives from Tesserae's
+`weather_hourly` widget. See its [license](widgets/weather_wind/LICENSE) and
+[attribution](widgets/weather_wind/NOTICE.md). The repository's default Apache
+license does not relicense that widget or other third-party code.
