@@ -101,7 +101,7 @@ def fetch(
 
     data_dir = Path(ctx["data_dir"])
     data_dir.mkdir(parents=True, exist_ok=True)
-    cache_path = data_dir / f"wind_solar_hourly_v2_{lat:.3f}_{lon:.3f}_{units}_{hours}.json"
+    cache_path = data_dir / f"wind_solar_hourly_v3_{lat:.3f}_{lon:.3f}_{units}_{hours}.json"
     cached = _cached(cache_path)
     if cached is not None:
         # ``label`` and the new-variant duplicate ``place`` are UI
@@ -124,7 +124,7 @@ def fetch(
         f"?latitude={lat}&longitude={lon}"
         "&current=temperature_2m,apparent_temperature,wind_speed_10m,wind_direction_10m"
         "&hourly=temperature_2m,precipitation_probability,weather_code"
-        "&daily=sunrise,sunset"
+        "&daily=sunrise,sunset,precipitation_probability_max"
         f"&temperature_unit={temp_unit}"
         f"&wind_speed_unit={'mph' if units == 'imperial' else 'kmh'}"
         "&forecast_days=3&timezone=auto"
@@ -238,6 +238,7 @@ def fetch(
         "wind_direction": current.get("wind_direction_10m"),
         "sunrise": _hhmm((daily.get("sunrise") or [None])[0]),
         "sunset": _hhmm((daily.get("sunset") or [None])[0]),
+        "daily_rain_probability": (daily.get("precipitation_probability_max") or [None])[0],
         # Structured fields the new variants paint from. Always present
         # so a cell can flip variant without re-fetching.
         "place": options.get("label", ""),

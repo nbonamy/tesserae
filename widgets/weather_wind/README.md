@@ -6,6 +6,7 @@ A Tesserae widget for an 800 × 480 e-ink weather screen:
 - Current and feels-like temperatures, with large low/high readings.
 - Wind direction and speed.
 - Sunrise and sunset icons with local times.
+- Today's rain probability, including 0% (Open-Meteo's daily maximum hourly precipitation probability).
 
 ## Use
 

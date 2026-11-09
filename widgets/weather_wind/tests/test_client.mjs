@@ -17,3 +17,16 @@ for (const [from, label, towards] of [[0, 'N', 180], [90, 'E', 270], [180, 'S', 
   assert.ok(shadow.innerHTML.includes('FEELS LIKE 5°'));
 }
 console.log('Solar footer and four cardinal wind bearings pass.');
+
+for (const width of [260, 400, 800]) {
+  for (const probability of [0, 35, 100, null]) {
+    const shadow = { host: { clientWidth: width }, innerHTML: '' };
+    render(shadow, { data: { daily_rain_probability: probability } });
+    const legend = shadow.innerHTML.match(/<div class="hr-legend">([\s\S]*?)<\/div>/)?.[1];
+    assert.ok(legend, `Rain footer missing at ${width}px`);
+    assert.ok(legend.includes(probability === null ? 'Rain —' : `Rain ${probability}%`));
+    assert.ok(!legend.includes('Temperature'));
+    assert.ok(!legend.includes('dot--temp'));
+  }
+}
+console.log('Daily rain footer stays visible, including zero and unavailable data.');

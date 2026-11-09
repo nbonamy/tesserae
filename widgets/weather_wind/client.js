@@ -231,14 +231,13 @@ export default function render(shadow, ctx) {
       </div>`
     : "";
 
-  const showLegend = cellWidth > 440;
-  const legend = showLegend
-    ? `
+  const dailyRain = Number.isFinite(data.daily_rain_probability)
+    ? `${Math.round(data.daily_rain_probability)}%`
+    : "—";
+  const legend = `
       <div class="hr-legend">
-        <span class="hr-key"><span class="dot dot--temp"></span>${escapeHtml(t("legend_temperature", "Temperature"))}</span>
-        ${hasRain ? `<span class="hr-key"><span class="dot dot--rain"></span>${escapeHtml(t("legend_rain", "Rain %"))}</span>` : ""}
-      </div>`
-    : "";
+        <span class="hr-key"><span class="dot dot--rain"></span>${escapeHtml(t("cond_rain", "Rain"))} ${dailyRain}</span>
+      </div>`;
 
   const sunEvent = (rising, value) => {
     const label = rising ? t("sunrise", "Sunrise") : t("sunset", "Sunset");
@@ -309,7 +308,6 @@ export default function render(shadow, ctx) {
       height: 0.7em;
       border-radius: 0;
     }
-    .hr-key .dot--temp { background: var(--accent-1); }
     .hr-key .dot--rain { background: var(--accent-4); }
     /* Keep the current reading beside the location; the forecast
        range leads the details column. */
@@ -327,7 +325,6 @@ export default function render(shadow, ctx) {
     .hr-range .lo { color: var(--accent-5); }
     .hr-range .sep { color: var(--text-muted); opacity: 0.5; }
     @container (max-width: 280px) {
-      .hr-legend { display: none; }
       .hr-range { display: none; }
     }
   `;
